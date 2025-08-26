@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>YouTube Video Downloader & Converter</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #0f172a;
+      color: #f1f5f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      overflow: hidden;
+    }
+    #particles-js {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+    }
+    .container {
+      position: relative;
+      z-index: 1;
+      background: rgba(30,41,59,0.9);
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5);
+      width: 100%;
+      max-width: 550px;
+      text-align: center;
+      animation: fadeIn 1s ease-out;
+    }
+    h2 {
+      font-size: 26px;
+      margin-bottom: 20px;
+      animation: slideDown 1s ease;
+      background: linear-gradient(90deg, #38bdf8, #2563eb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    input {
+      width: 90%;
+      padding: 12px;
+      margin: 12px 0;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      background: #334155;
+      color: #f1f5f9;
+      outline: none;
+      transition: all 0.3s ease;
+    }
+    input:focus {
+      background: #475569;
+      transform: scale(1.02);
+    }
+    button {
+      background: linear-gradient(135deg, #2563eb, #1e40af);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 8px;
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      transform: translateY(-3px) scale(1.05);
+      box-shadow: 0 6px 15px rgba(37, 99, 235, 0.4);
+    }
+    .output {
+      margin-top: 20px;
+      word-break: break-all;
+      font-size: 16px;
+      color: #cbd5e1;
+      opacity: 0;
+      animation: fadeInUp 1s ease forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    @keyframes slideDown {
+      from { transform: translateY(-20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    @keyframes fadeInUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+  <div id="particles-js"></div>
+  <div class="container">
+    <h2>YouTube Video Downloader & Converter</h2>
+    <input id="ytLink" type="text" placeholder="Paste YouTube or youtu.be link here" />
+    <br/>
+    <button onclick="convertLink()">✨ Convert</button>
+    <div id="result" class="output"></div>
+  </div>
+
+  <script>
+    function convertLink() {
+      const input = document.getElementById("ytLink").value.trim();
+      let finalUrl = "";
+
+      try {
+        let url = new URL(input);
+
+        // Case 1: youtu.be short link
+        if (url.hostname.includes("youtu.be")) {
+          let videoId = url.pathname.replace("/", "");
+          let params = url.searchParams.toString();
+          let fullUrl = `https://m.youtube.com/watch?v=${videoId}`;
+          if (params) {
+            fullUrl += `&${params}`;
+          }
+          finalUrl = fullUrl.replace("m.youtube.com", "m.youtubepi.com");
+        }
+
+        // Case 2: already a youtube.com link
+        else if (url.hostname.includes("youtube.com")) {
+          finalUrl = input.replace("m.youtube.com", "m.youtubepi.com");
+        }
+
+        else {
+          document.getElementById("result").innerHTML =
+            "<span style='color:#f87171'>❌ Not a valid YouTube link.</span>";
+          return;
+        }
+
+        document.getElementById("result").innerHTML = `
+          ✅ Converted Link:<br>
+          <a href="${finalUrl}" target="_blank" style="color:#38bdf8; text-decoration:none;">${finalUrl}</a>
+        `;
+        document.getElementById("result").style.opacity = 1;
+      } catch (e) {
+        document.getElementById("result").innerHTML =
+          "<span style='color:#f87171'>❌ Invalid URL format.</span>";
+        document.getElementById("result").style.opacity = 1;
+      }
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/particles.js/2.0.0/particles.min.js"></script>
+  <script>
+    particlesJS("particles-js", {
+      "particles": {
+        "number": {"value": 80},
+        "size": {"value": 3},
+        "move": {"speed": 2},
+        "line_linked": {"enable": true, "distance": 150, "color": "#38bdf8", "opacity": 0.4, "width": 1},
+        "color": {"value": "#38bdf8"},
+      },
+      "interactivity": {
+        "events": {
+          "onhover": {"enable": true, "mode": "repulse"},
+        }
+      },
+      "retina_detect": true
+    });
+  </script>
+</body>
+</html>
