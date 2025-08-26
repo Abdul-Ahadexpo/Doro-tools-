@@ -1,101 +1,107 @@
-<!doctype html>
-
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>YouTube → YouTubePI Link Rewriter</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>YouTube PI Link Converter</title>
   <style>
-    :root{--bg:#ffffff;--fg:#0a0a0a;--muted:#6b7280;--border:#e5e7eb}
-    *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:var(--bg);color:var(--fg)}
-    .wrap{max-width:720px;margin:0 auto;padding:24px}
-    h1{font-weight:700;letter-spacing:-0.01em;font-size:clamp(22px,3.5vw,32px);margin:8px 0 4px}
-    p{color:var(--muted);margin:0 0 16px}
-    .card{border:1px solid var(--border);border-radius:16px;padding:16px}
-    .row{display:flex;gap:8px;align-items:center}
-    input[type=url]{flex:1;min-width:0;padding:12px 14px;border:1px solid var(--border);border-radius:12px;font-size:16px}
-    button{padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:#f9fafb;font-weight:600;cursor:pointer}
-    button:active{transform:translateY(1px)}
-    .out{margin-top:12px;display:none}
-    .out.show{display:block}
-    .box{padding:12px 14px;border:1px dashed var(--border);border-radius:12px;word-break:break-all}
-    .actions{display:flex;gap:8px;margin-top:10px}
-    .hint{font-size:13px;color:var(--muted)}
-    .err{color:#b91c1c;font-size:14px;margin-top:8px}
-    .footer{margin-top:28px;font-size:12px;color:var(--muted)}
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8fafc;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .container {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 500px;
+      text-align: center;
+    }
+    input {
+      width: 90%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      background: #2563eb;
+      color: white;
+      border: none;
+      padding: 10px 18px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 6px;
+    }
+    button:hover {
+      background: #1e40af;
+    }
+    .output {
+      margin-top: 20px;
+      word-break: break-all;
+      font-size: 15px;
+      color: #1e293b;
+    }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>YouTube → YouTubePI Link Rewriter</h1>
-    <p>Paste a mobile YouTube link like <code>https://m.youtube.com/watch?v=...</code>. This tool will change it to <code>https://m.youtubepi.com/...</code>.</p><div class="card">
-  <label for="in" class="hint">Input link</label>
-  <div class="row" style="margin-top:6px">
-    <input id="in" type="url" placeholder="https://m.youtube.com/watch?v=mdb8L87DU58&feature=youtu.be" autofocus />
-    <button id="go" title="Rewrite link">Rewrite</button>
-  </div>
-  <div id="err" class="err" role="alert" aria-live="polite"></div>
-
-  <div id="out" class="out" aria-live="polite">
-    <div class="hint" style="margin-top:10px">Rewritten link</div>
-    <div id="box" class="box"></div>
-    <div class="actions">
-      <button id="copy">Copy</button>
-      <button id="open">Open</button>
-    </div>
+  <div class="container">
+    <h2>YouTube → YouTubePI Converter</h2>
+    <input id="ytLink" type="text" placeholder="Paste YouTube or youtu.be link here" />
+    <br/>
+    <button onclick="convertLink()">Convert</button>
+    <div id="result" class="output"></div>
   </div>
 
-  <p class="hint" style="margin-top:12px">Rule: add <strong>pi</strong> right after <code>youtube</code> in the hostname if the link starts with <code>https://m.youtube</code>.</p>
-</div>
+  <script>
+    function convertLink() {
+      const input = document.getElementById("ytLink").value.trim();
+      let finalUrl = "";
 
-<div class="footer">All processing happens in your browser.</div>
+      try {
+        let url = new URL(input);
 
-  </div>  <script>
-    const $ = (id) => document.getElementById(id);
-    const input = $("in");
-    const out = $("out");
-    const box = $("box");
-    const err = $("err");
-
-    function rewrite(urlStr){
-      try{
-        const u = new URL(urlStr);
-        // Must begin with m.youtube.* (http or https)
-        const host = u.hostname; // e.g., m.youtube.com
-        if(!/^m\.youtube\./.test(host)){
-          throw new Error("Please use a mobile YouTube link that starts with https://m.youtube...");
+        // Case 1: youtu.be short link
+        if (url.hostname.includes("youtu.be")) {
+          let videoId = url.pathname.replace("/", "");
+          let params = url.searchParams.toString();
+          let fullUrl = `https://m.youtube.com/watch?v=${videoId}`;
+          if (params) {
+            fullUrl += `&${params}`;
+          }
+          // Rewrite to pi link
+          finalUrl = fullUrl.replace("m.youtube.com", "m.youtubepi.com");
         }
-        // Insert 'pi' after 'youtube' in the hostname: m.youtube.com -> m.youtubepi.com
-        u.hostname = host.replace("m.youtube", "m.youtubepi");
-        return u.toString();
-      }catch(e){
-        throw e;
+
+        // Case 2: already a youtube.com link
+        else if (url.hostname.includes("youtube.com")) {
+          finalUrl = input.replace("m.youtube.com", "m.youtubepi.com");
+        }
+
+        else {
+          document.getElementById("result").innerHTML =
+            "<span style='color:red'>❌ Not a valid YouTube link.</span>";
+          return;
+        }
+
+        // Output result
+        document.getElementById("result").innerHTML = `
+          ✅ Converted Link: <br>
+          <a href="${finalUrl}" target="_blank">${finalUrl}</a>
+        `;
+      } catch (e) {
+        document.getElementById("result").innerHTML =
+          "<span style='color:red'>❌ Invalid URL format.</span>";
       }
     }
-
-    function handle(){
-      err.textContent = "";
-      out.classList.remove("show");
-      const raw = input.value.trim();
-      if(!raw){ err.textContent = "Please paste a link."; return; }
-      try{
-        const res = rewrite(raw);
-        box.textContent = res;
-        out.classList.add("show");
-      }catch(e){
-        err.textContent = e.message || String(e);
-      }
-    }
-
-    $("go").addEventListener("click", handle);
-    input.addEventListener("keydown", (e)=>{ if(e.key==="Enter") handle(); });
-
-    $("copy").addEventListener("click", async ()=>{
-      try{ await navigator.clipboard.writeText(box.textContent); }catch{}
-    });
-    $("open").addEventListener("click", ()=>{
-      const href = box.textContent.trim();
-      if(href) window.open(href, "_blank");
-    });
-  </script></body>
+  </script>
+</body>
 </html>
