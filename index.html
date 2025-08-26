@@ -1,0 +1,101 @@
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>YouTube → YouTubePI Link Rewriter</title>
+  <style>
+    :root{--bg:#ffffff;--fg:#0a0a0a;--muted:#6b7280;--border:#e5e7eb}
+    *{box-sizing:border-box}body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,Noto Sans,sans-serif;background:var(--bg);color:var(--fg)}
+    .wrap{max-width:720px;margin:0 auto;padding:24px}
+    h1{font-weight:700;letter-spacing:-0.01em;font-size:clamp(22px,3.5vw,32px);margin:8px 0 4px}
+    p{color:var(--muted);margin:0 0 16px}
+    .card{border:1px solid var(--border);border-radius:16px;padding:16px}
+    .row{display:flex;gap:8px;align-items:center}
+    input[type=url]{flex:1;min-width:0;padding:12px 14px;border:1px solid var(--border);border-radius:12px;font-size:16px}
+    button{padding:12px 14px;border-radius:12px;border:1px solid var(--border);background:#f9fafb;font-weight:600;cursor:pointer}
+    button:active{transform:translateY(1px)}
+    .out{margin-top:12px;display:none}
+    .out.show{display:block}
+    .box{padding:12px 14px;border:1px dashed var(--border);border-radius:12px;word-break:break-all}
+    .actions{display:flex;gap:8px;margin-top:10px}
+    .hint{font-size:13px;color:var(--muted)}
+    .err{color:#b91c1c;font-size:14px;margin-top:8px}
+    .footer{margin-top:28px;font-size:12px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>YouTube → YouTubePI Link Rewriter</h1>
+    <p>Paste a mobile YouTube link like <code>https://m.youtube.com/watch?v=...</code>. This tool will change it to <code>https://m.youtubepi.com/...</code>.</p><div class="card">
+  <label for="in" class="hint">Input link</label>
+  <div class="row" style="margin-top:6px">
+    <input id="in" type="url" placeholder="https://m.youtube.com/watch?v=mdb8L87DU58&feature=youtu.be" autofocus />
+    <button id="go" title="Rewrite link">Rewrite</button>
+  </div>
+  <div id="err" class="err" role="alert" aria-live="polite"></div>
+
+  <div id="out" class="out" aria-live="polite">
+    <div class="hint" style="margin-top:10px">Rewritten link</div>
+    <div id="box" class="box"></div>
+    <div class="actions">
+      <button id="copy">Copy</button>
+      <button id="open">Open</button>
+    </div>
+  </div>
+
+  <p class="hint" style="margin-top:12px">Rule: add <strong>pi</strong> right after <code>youtube</code> in the hostname if the link starts with <code>https://m.youtube</code>.</p>
+</div>
+
+<div class="footer">All processing happens in your browser.</div>
+
+  </div>  <script>
+    const $ = (id) => document.getElementById(id);
+    const input = $("in");
+    const out = $("out");
+    const box = $("box");
+    const err = $("err");
+
+    function rewrite(urlStr){
+      try{
+        const u = new URL(urlStr);
+        // Must begin with m.youtube.* (http or https)
+        const host = u.hostname; // e.g., m.youtube.com
+        if(!/^m\.youtube\./.test(host)){
+          throw new Error("Please use a mobile YouTube link that starts with https://m.youtube...");
+        }
+        // Insert 'pi' after 'youtube' in the hostname: m.youtube.com -> m.youtubepi.com
+        u.hostname = host.replace("m.youtube", "m.youtubepi");
+        return u.toString();
+      }catch(e){
+        throw e;
+      }
+    }
+
+    function handle(){
+      err.textContent = "";
+      out.classList.remove("show");
+      const raw = input.value.trim();
+      if(!raw){ err.textContent = "Please paste a link."; return; }
+      try{
+        const res = rewrite(raw);
+        box.textContent = res;
+        out.classList.add("show");
+      }catch(e){
+        err.textContent = e.message || String(e);
+      }
+    }
+
+    $("go").addEventListener("click", handle);
+    input.addEventListener("keydown", (e)=>{ if(e.key==="Enter") handle(); });
+
+    $("copy").addEventListener("click", async ()=>{
+      try{ await navigator.clipboard.writeText(box.textContent); }catch{}
+    });
+    $("open").addEventListener("click", ()=>{
+      const href = box.textContent.trim();
+      if(href) window.open(href, "_blank");
+    });
+  </script></body>
+</html>
